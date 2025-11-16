@@ -1,6 +1,6 @@
 {
   "name": "@filipgorny/api-gateway",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "API Gateway library for request proxying built on @filipgorny/service-api",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

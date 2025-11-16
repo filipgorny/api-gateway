@@ -63,7 +63,7 @@ const contentAnalyzer = new Proxy(
 // Override specific operation
 contentAnalyzer.override('detect-tasks', async (input) => {
   // Custom logic here
-  console.log('Custom detect-tasks handler');
+  // Use logger for logging instead of console.log
 
   // Call original service or implement custom logic
   return { tasks: [], confidence: 0.95 };
