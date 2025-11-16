@@ -1,0 +1,61 @@
+{
+  "name": "@filipgorny/api-gateway",
+  "version": "0.0.1",
+  "description": "API Gateway library for request proxying built on @filipgorny/service-api",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [
+    "api-gateway",
+    "proxy",
+    "microservices",
+    "service-api",
+    "request-proxying",
+    "schema-fetching"
+  ],
+  "author": "Filip Gorny",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/filipgorny/api-gateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/filipgorny/api-gateway/issues"
+  },
+  "homepage": "https://github.com/filipgorny/api-gateway#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@filipgorny/service-api": ">=0.0.1",
+    "@filipgorny/logger": ">=0.0.1",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "jest": "^30.2.0",
+    "nock": "^13.5.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.3.2"
+  },
+  "peerDependencies": {
+    "@filipgorny/service-api": ">=0.0.1",
+    "@filipgorny/logger": ">=0.0.1"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
