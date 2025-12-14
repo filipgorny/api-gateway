@@ -23,7 +23,6 @@ import { Proxy } from "./proxy";
  */
 export class ProxyApi extends RestApi {
   private proxies: Proxy[] = [];
-  private logger = createLogger("ProxyApi", LogLevel.INFO);
 
   constructor(strategy: Strategy, addDefaultMethods = true) {
     super(strategy, addDefaultMethods);
@@ -59,19 +58,28 @@ export class ProxyApi extends RestApi {
    * 2. Register all methods from the proxy in API Gateway
    */
   async initialize(): Promise<void> {
-    this.logger.info(`Initializing ProxyApi with ${this.proxies.length} services`);
+    this.logger.info(
+      `Initializing ProxyApi with ${this.proxies.length} services`,
+    );
 
-    // Initialize all proxies in parallel
+    // Initialize all proxies in parallel (skip if already initialized)
     await Promise.all(
-      this.proxies.map((proxy) =>
-        proxy.initialize().catch((error) => {
+      this.proxies.map(async (proxy) => {
+        if (proxy.isInitialized()) {
+          this.logger.debug(
+            `Proxy ${proxy.getServiceName()} already initialized, skipping`,
+          );
+          return;
+        }
+
+        return proxy.initialize().catch((error) => {
           this.logger.error(
             `Failed to initialize proxy for ${proxy.getServiceName()}`,
             error,
           );
           throw error;
-        }),
-      ),
+        });
+      }),
     );
 
     // Register all methods from all proxies
@@ -103,6 +111,14 @@ export class ProxyApi extends RestApi {
     this.logger.info(
       `Total registered methods from ${this.proxies.length} services: ${totalMethods}`,
     );
+  }
+
+  /**
+   * Register methods from already initialized proxies
+   * Used for composite ProxyApis where proxies are already initialized
+   */
+  registerMethodsFromProxies(): void {
+    this.registerProxyMethods();
   }
 
   /**
