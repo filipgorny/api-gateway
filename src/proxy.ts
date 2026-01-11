@@ -99,9 +99,10 @@ export class Proxy {
       const methodType = this.mapOperationToMethodType(operation.operationType);
 
       // Create Method instance
+      const routeName = this.buildRouteName(operation);
       const method = new Method(
         methodType,
-        this.buildRouteName(operation),
+        routeName,
         handler,
         operation.description ||
           `Proxy to ${this.serviceName}: ${operation.id}`,
@@ -110,8 +111,8 @@ export class Proxy {
       this.methods.push(method);
 
       const handlerType = customHandler ? "custom" : "default";
-      this.logger.debug(
-        `Generated ${handlerType} proxy method: ${method.name} (${operation.operationType})`,
+      this.logger.info(
+        `Generated ${handlerType} proxy method: ${routeName} (${operation.operationType})`,
       );
     }
   }
@@ -144,19 +145,21 @@ export class Proxy {
    * Falls back to operation.id for other protocols
    */
   private buildRouteName(operation: Operation): string {
-    // Use custom route prefix if provided, otherwise use service name
-    const prefix = this.routePrefix || this.serviceName;
+    // Use custom route prefix if provided (check for undefined, not falsy)
+    // Empty string is a valid prefix meaning "no prefix"
+    const prefix = this.routePrefix !== undefined ? this.routePrefix : this.serviceName;
 
     // For REST APIs, use the path directly from the operation
     if (operation.rest?.path) {
       // Remove leading slash to avoid double slashes
       const path = operation.rest.path.replace(/^\//, "");
-      return `${prefix}/${path}`;
+      // If prefix is empty, return path as-is, otherwise add prefix
+      return prefix ? `${prefix}/${path}` : path;
     }
 
     // Fallback: convert operation ID to route
     const routePath = operation.id.replace(".", "/");
-    return `${prefix}/${routePath}`;
+    return prefix ? `${prefix}/${routePath}` : routePath;
   }
 
   /**
@@ -208,7 +211,22 @@ export class Proxy {
       throw new Error("REST details missing");
     }
 
-    const url = `${this.serviceUrl}${operation.rest.path}`;
+    // Replace path parameters (e.g., :batchId) with actual values from input
+    let path = operation.rest.path;
+    const pathParams = path.match(/:([^/]+)/g);
+    const remainingInput = { ...input };
+
+    if (pathParams) {
+      for (const param of pathParams) {
+        const paramName = param.substring(1); // Remove leading :
+        if (input && input[paramName] !== undefined) {
+          path = path.replace(param, String(input[paramName]));
+          delete remainingInput[paramName]; // Remove from input to avoid sending in body
+        }
+      }
+    }
+
+    const url = `${this.serviceUrl}${path}`;
     const method = operation.rest.method.toLowerCase() as
       | "get"
       | "post"
@@ -228,9 +246,9 @@ export class Proxy {
 
     // GET requests use query params, others use body
     if (method === "get") {
-      config.params = input;
+      config.params = remainingInput;
     } else {
-      config.data = input;
+      config.data = remainingInput;
     }
 
     const response = await axios(config);

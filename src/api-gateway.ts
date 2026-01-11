@@ -16,7 +16,7 @@ import axios from "axios";
  * const gateway = new ApiGateway(express(3000));
  *
  * // Create proxy API from schema
- * const proxyApi1 = gateway.createProxyApi(schema1);
+ * const proxyApi1 = gateway.createProxyApi(schema1);QQ
  * const proxyApi2 = gateway.createProxyApi(schema2);
  *
  * // Or create empty ProxyApi and add proxies manually
@@ -85,6 +85,9 @@ export class ApiGateway {
       this.logger.info(
         `Schema fetched successfully from ${schema.service.name}`,
       );
+
+      // Override schema baseUrl with actual serviceUrl used for fetching
+      schema.service.baseUrl = serviceUrl;
 
       // Create ProxyApi with fetched schema and optional custom prefix
       return this.createProxyApi(schema, routePrefix);
